@@ -41,6 +41,7 @@ export PROJECT_DIR="$PROJECT_DIR"
 export PIP_CACHE_DIR="$PIP_CACHE_DIR_VOL"
 export UV_CACHE_DIR="$UV_CACHE_DIR_VOL"
 export TORCH_HOME="$TORCH_HOME_VOL"
+export HF_HUB_ENABLE_HF_TRANSFER=0
 EOF
 # exporta também na sessão atual
 export HF_HOME="$HF_HOME_DIR"
@@ -54,6 +55,10 @@ export PROJECT_DIR="$PROJECT_DIR"
 export PIP_CACHE_DIR="$PIP_CACHE_DIR_VOL"
 export UV_CACHE_DIR="$UV_CACHE_DIR_VOL"
 export TORCH_HOME="$TORCH_HOME_VOL"
+# O template liga HF_HUB_ENABLE_HF_TRANSFER=1, mas o 'hf_transfer' não existe no
+# ambiente do whisperx (uvx) -> download falha. Desliga o "turbo" pra usar o
+# downloader padrão (mais lento, mas funciona).
+export HF_HUB_ENABLE_HF_TRANSFER=0
 
 echo "==> 3/6  Instalando deps de sistema (ffmpeg, git)"
 if command -v apt-get >/dev/null 2>&1; then

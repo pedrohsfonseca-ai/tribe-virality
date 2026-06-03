@@ -78,10 +78,13 @@ if [ -n "$TORCH_BEFORE" ] && [ "$TORCH_AFTER" != "$TORCH_BEFORE" ]; then
     || echo "    (falha ao restaurar automaticamente — restaure o torch à mão)"
 fi
 
-echo "==> 6/6  Instalando deps de análise + numpy exigido pelo tribev2"
+echo "==> 6/6  Instalando deps de análise + acertando versões que o tribev2 exige"
 pip install -q nilearn pandas scipy
 # O tribev2 0.1.0 exige numpy==2.2.6 (NÃO é <2.1 como dizia o brief antigo).
 pip install -q "numpy==2.2.6"
+# O neuralset exige exca>=0.5.20, mas as versões mais novas do exca removeram
+# 'exca.steps.base.NoValue', que o tribev2 usa -> ImportError. Fixa em 0.5.20.
+pip install -q "exca==0.5.20"
 
 echo ""
 echo "================================================================"

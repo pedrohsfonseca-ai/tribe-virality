@@ -78,7 +78,10 @@ if [ -n "$TORCH_BEFORE" ] && [ "$TORCH_AFTER" != "$TORCH_BEFORE" ]; then
   echo "    ⚠️  tribev2 mudou o torch: $TORCH_BEFORE -> $TORCH_AFTER. Restaurando o stack do template..."
   # Assume o template RunPod PyTorch 2.8.0 (cu128). Se você usar outro template,
   # ajuste estas versões para as que vinham instaladas (veja TORCH_BEFORE acima).
-  pip install -q --force-reinstall --no-deps \
+  # IMPORTANTE: NÃO usar --no-deps aqui. Sem as deps, as libs CUDA (nvidia-*-cu12)
+  # ficam na versão antiga (12.4) e dão "undefined symbol: cudaGetDriverEntryPoint...".
+  # Com deps, o torch 2.8 puxa as libs CUDA 12.8 corretas. O numpy é re-fixado no 6/6.
+  pip install -q --force-reinstall \
     torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 \
     --index-url https://download.pytorch.org/whl/cu128 \
     || echo "    (falha ao restaurar automaticamente — restaure o torch à mão)"

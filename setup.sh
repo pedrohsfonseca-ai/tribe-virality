@@ -27,6 +27,8 @@ mkdir -p "$HF_HOME_DIR" "$TRIBE_CACHE_DIR" "$PROJECT_DIR/videos"
 
 echo "==> 2/6  Persistindo variáveis de ambiente (HF_HOME, TRIBE_CACHE) no ~/.bashrc"
 # grava só se ainda não estiver lá, pra não duplicar a cada execução
+PIP_CACHE_DIR_VOL="$WORKSPACE/pip_cache"
+mkdir -p "$PIP_CACHE_DIR_VOL"
 grep -q "TRIBE_CACHE=" ~/.bashrc 2>/dev/null || cat >> ~/.bashrc <<EOF
 
 # --- TRIBE v2 project (adicionado pelo setup.sh) ---
@@ -34,12 +36,16 @@ export HF_HOME="$HF_HOME_DIR"
 export HUGGINGFACE_HUB_CACHE="$HF_HOME_DIR"
 export TRIBE_CACHE="$TRIBE_CACHE_DIR"
 export PROJECT_DIR="$PROJECT_DIR"
+export PIP_CACHE_DIR="$PIP_CACHE_DIR_VOL"
 EOF
 # exporta também na sessão atual
 export HF_HOME="$HF_HOME_DIR"
 export HUGGINGFACE_HUB_CACHE="$HF_HOME_DIR"
 export TRIBE_CACHE="$TRIBE_CACHE_DIR"
 export PROJECT_DIR="$PROJECT_DIR"
+# Cache do pip no volume -> reinstalar após um restart do container não re-baixa
+# torch/cuda (vários GB). Acelera muito a recuperação de um pod reiniciado.
+export PIP_CACHE_DIR="$PIP_CACHE_DIR_VOL"
 
 echo "==> 3/6  Instalando deps de sistema (ffmpeg, git)"
 if command -v apt-get >/dev/null 2>&1; then

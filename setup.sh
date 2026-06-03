@@ -111,6 +111,10 @@ pip install -q "exca==0.5.20"
 # pillow<12. Fixa numa 11.x que satisfaz os dois.
 pip install -q "pillow<12"
 
+echo "==> Ajustando a transcrição para português (idempotente)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+TRIBE_REPO="$TRIBE_REPO" python "$SCRIPT_DIR/patch_portuguese.py" || echo "    (patch PT falhou — rode patch_portuguese.py à mão)"
+
 echo ""
 echo "================================================================"
 echo " SETUP OK."

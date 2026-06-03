@@ -28,7 +28,9 @@ mkdir -p "$HF_HOME_DIR" "$TRIBE_CACHE_DIR" "$PROJECT_DIR/videos"
 echo "==> 2/6  Persistindo variáveis de ambiente (HF_HOME, TRIBE_CACHE) no ~/.bashrc"
 # grava só se ainda não estiver lá, pra não duplicar a cada execução
 PIP_CACHE_DIR_VOL="$WORKSPACE/pip_cache"
-mkdir -p "$PIP_CACHE_DIR_VOL"
+UV_CACHE_DIR_VOL="$WORKSPACE/uv_cache"        # whisperx instalado via uvx
+TORCH_HOME_VOL="$WORKSPACE/torch_cache"       # modelo de alinhamento wav2vec2
+mkdir -p "$PIP_CACHE_DIR_VOL" "$UV_CACHE_DIR_VOL" "$TORCH_HOME_VOL"
 grep -q "TRIBE_CACHE=" ~/.bashrc 2>/dev/null || cat >> ~/.bashrc <<EOF
 
 # --- TRIBE v2 project (adicionado pelo setup.sh) ---
@@ -37,15 +39,21 @@ export HUGGINGFACE_HUB_CACHE="$HF_HOME_DIR"
 export TRIBE_CACHE="$TRIBE_CACHE_DIR"
 export PROJECT_DIR="$PROJECT_DIR"
 export PIP_CACHE_DIR="$PIP_CACHE_DIR_VOL"
+export UV_CACHE_DIR="$UV_CACHE_DIR_VOL"
+export TORCH_HOME="$TORCH_HOME_VOL"
 EOF
 # exporta também na sessão atual
 export HF_HOME="$HF_HOME_DIR"
 export HUGGINGFACE_HUB_CACHE="$HF_HOME_DIR"
 export TRIBE_CACHE="$TRIBE_CACHE_DIR"
 export PROJECT_DIR="$PROJECT_DIR"
-# Cache do pip no volume -> reinstalar após um restart do container não re-baixa
-# torch/cuda (vários GB). Acelera muito a recuperação de um pod reiniciado.
+# Caches no volume -> sobrevivem ao restart do container (que zera o resto).
+#   PIP_CACHE_DIR : não re-baixa torch/cuda (GBs) ao re-rodar o setup
+#   UV_CACHE_DIR  : a transcrição usa 'uvx whisperx' (baixa o whisperx + deps)
+#   TORCH_HOME    : modelo de alinhamento wav2vec2 do whisperx
 export PIP_CACHE_DIR="$PIP_CACHE_DIR_VOL"
+export UV_CACHE_DIR="$UV_CACHE_DIR_VOL"
+export TORCH_HOME="$TORCH_HOME_VOL"
 
 echo "==> 3/6  Instalando deps de sistema (ffmpeg, git)"
 if command -v apt-get >/dev/null 2>&1; then

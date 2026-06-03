@@ -49,23 +49,39 @@ else
   echo "    (apt-get não encontrado — pulei deps de sistema; garanta ffmpeg manualmente)"
 fi
 
-echo "==> 4/6  Fixando numpy < 2.1 (exigência do TRIBE — NÃO mexer no torch)"
-pip install -q "numpy<2.1"
+echo "==> 4/6  Guardando a versão do torch do template (o tribev2 costuma rebaixá-la)"
+# IMPORTANTE: o template PyTorch 2.8.0 traz o torch que suporta GPUs Blackwell
+# (RTX 5090 / RTX PRO 6000 = sm_120). O tribev2, ao instalar, REBAIXA o torch para
+# 2.6.0+cu124, que NÃO conhece a 5090 -> "no kernel image is available". Por isso
+# guardamos a versão original e restauramos depois.
+TORCH_BEFORE=$(python -c "import torch; print(torch.__version__)" 2>/dev/null || echo "")
+echo "    torch atual: ${TORCH_BEFORE:-desconhecido}"
 
-echo "==> 5/6  Clonando + instalando o tribev2 (sem tocar no torch)"
+echo "==> 5/6  Clonando + instalando o tribev2"
 if [ ! -d "$TRIBE_REPO/.git" ]; then
   git clone --depth 1 https://github.com/facebookresearch/tribev2.git "$TRIBE_REPO"
 else
   echo "    repo já existe em $TRIBE_REPO — git pull"
   git -C "$TRIBE_REPO" pull --ff-only || true
 fi
-# instala em modo editável, SEM deixar o pip puxar/atualizar torch
-pip install -q --no-build-isolation -e "$TRIBE_REPO" || pip install -q -e "$TRIBE_REPO"
+pip install -q -e "$TRIBE_REPO" || true
 
-echo "==> 6/6  Instalando deps de análise (nilearn, pandas, scipy)"
+# Restaura o torch original do template se o tribev2 o tiver mudado.
+TORCH_AFTER=$(python -c "import torch; print(torch.__version__)" 2>/dev/null || echo "")
+if [ -n "$TORCH_BEFORE" ] && [ "$TORCH_AFTER" != "$TORCH_BEFORE" ]; then
+  echo "    ⚠️  tribev2 mudou o torch: $TORCH_BEFORE -> $TORCH_AFTER. Restaurando o stack do template..."
+  # Assume o template RunPod PyTorch 2.8.0 (cu128). Se você usar outro template,
+  # ajuste estas versões para as que vinham instaladas (veja TORCH_BEFORE acima).
+  pip install -q --force-reinstall --no-deps \
+    torch==2.8.0 torchvision==0.23.0 torchaudio==2.8.0 \
+    --index-url https://download.pytorch.org/whl/cu128 \
+    || echo "    (falha ao restaurar automaticamente — restaure o torch à mão)"
+fi
+
+echo "==> 6/6  Instalando deps de análise + numpy exigido pelo tribev2"
 pip install -q nilearn pandas scipy
-# reafirma numpy<2.1 caso alguma dep tenha tentado subir
-pip install -q "numpy<2.1"
+# O tribev2 0.1.0 exige numpy==2.2.6 (NÃO é <2.1 como dizia o brief antigo).
+pip install -q "numpy==2.2.6"
 
 echo ""
 echo "================================================================"
@@ -76,7 +92,8 @@ echo "   PROJECT_DIR  = $PROJECT_DIR  (ponha os .mp4 em $PROJECT_DIR/videos)"
 echo "   tribev2 repo = $TRIBE_REPO  (tem utils_fmri.py / demo notebook)"
 echo ""
 echo " PRÓXIMO:"
-echo "   1) huggingface-cli login        # token 'read'; aceite a licença do"
+echo "   1) hf auth login                # ('huggingface-cli' foi descontinuado)"
+echo "                                    #   token 'read'; aceite a licença do"
 echo "                                    #   meta-llama/Llama-3.2-3B no site da HF"
 echo "   2) python smoke_test.py         # tem que terminar com 'MÁQUINA PRONTA'"
 echo "================================================================"

@@ -9,7 +9,7 @@ e o enquadramento honesto.
 
 ```
 setup.sh            # 1. provisiona o pod (deps, numpy<2.1, tribev2, nilearn)
-huggingface-cli login   # 2. token 'read' + aceitar licença do Llama-3.2-3B
+hf auth login           # 2. token 'read' + aceitar licença do Llama-3.2-3B
 python smoke_test.py    # 3. valida a máquina -> "MÁQUINA PRONTA"
                         #    (descobre o nº REAL de vértices — ponto frágil #1)
 # 4. colocar os .mp4 em $PROJECT_DIR/videos/  (id = nome do arquivo)

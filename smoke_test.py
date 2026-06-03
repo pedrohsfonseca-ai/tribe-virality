@@ -53,12 +53,13 @@ if vram_gb < 30:
           f"estourar em vídeos longos. A40 48GB / A100 40GB+ é o recomendado.")
 
 
-# --- 2. numpy < 2.1 --------------------------------------------------------
-print("\n== 2/8  numpy < 2.1 ==")
+# --- 2. numpy compatível com o tribev2 (==2.2.6) ---------------------------
+print("\n== 2/8  numpy (tribev2 exige 2.2.6) ==")
 import numpy as np
 from packaging.version import Version
-if Version(np.__version__) >= Version("2.1"):
-    fail(f"numpy {np.__version__} >= 2.1.", "Rode: pip install 'numpy<2.1'")
+if Version(np.__version__) < Version("2.1"):
+    fail(f"numpy {np.__version__} < 2.1.",
+         "O tribev2 0.1.0 exige numpy==2.2.6. Rode: pip install 'numpy==2.2.6'")
 ok(f"numpy {np.__version__}")
 
 

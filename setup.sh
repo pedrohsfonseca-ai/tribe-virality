@@ -94,6 +94,9 @@ pip install -q "numpy==2.2.6"
 # O neuralset exige exca>=0.5.20, mas as versões mais novas do exca removeram
 # 'exca.steps.base.NoValue', que o tribev2 usa -> ImportError. Fixa em 0.5.20.
 pip install -q "exca==0.5.20"
+# O torchvision puxa pillow 12, mas o moviepy (extrai áudio do vídeo) exige
+# pillow<12. Fixa numa 11.x que satisfaz os dois.
+pip install -q "pillow<12"
 
 echo ""
 echo "================================================================"
